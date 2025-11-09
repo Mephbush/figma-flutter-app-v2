@@ -34,7 +34,7 @@ class ServiceModel {
       'description_en': descriptionEn,
       'features_ar': featuresAr,
       'features_en': featuresEn,
-      'color': color?.value.toRadixString(16),
+      'color': color != null ? '#${color!.value.toRadixString(16).padLeft(8, '0')}' : null,
     };
   }
 

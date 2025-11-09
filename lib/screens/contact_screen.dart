@@ -89,7 +89,7 @@ class _ContactScreenState extends State<ContactScreen> {
                     Text(
                       t['contactDescription'],
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                     ),
                   ],

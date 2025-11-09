@@ -189,16 +189,6 @@ class _ContactItem extends StatelessWidget {
           color: AppTheme.primaryColor,
           size: 20,
         ),
-        const SizedBox(width: 12),
-        Flexible(
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
-            textAlign: TextAlign.center,
-          ),
-        ),
       ],
     );
 

@@ -104,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       t['welcome'],
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                       textAlign: TextAlign.center,
                     ),
@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       t['heroSubtitle'],
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                       textAlign: TextAlign.center,
                     ),
@@ -282,8 +282,15 @@ class _HomeScreenState extends State<HomeScreen> {
     
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient.scale(0.3),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0x4D9333EA), // primaryPurple with 30% opacity
+            Color(0x4D7C3AED), // secondaryPurple with 30% opacity
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: Column(
         children: [
@@ -351,7 +358,7 @@ class _ServiceCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 30),
@@ -454,7 +461,7 @@ class _StatItem extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
         ),
       ],

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// 🎨 ثيم التطبيق - نظام ألوان VisCend Studio
 class AppTheme {
   // ألوان VisCend (بنفسجي متدرج)
+  static const Color primaryColor = primaryPurple; // إضافة للتوافق
   static const Color primaryPurple = Color(0xFF9333EA);
   static const Color secondaryPurple = Color(0xFF7C3AED);
   static const Color accentBlue = Color(0xFF3B82F6);

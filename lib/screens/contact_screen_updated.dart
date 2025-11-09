@@ -194,7 +194,7 @@ class _ContactScreenState extends State<ContactScreen> {
               Icon(
                 Icons.mail_outline,
                 size: Responsive.iconSize(context, 50),
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
               const SizedBox(height: 12),
               Text(
@@ -210,7 +210,7 @@ class _ContactScreenState extends State<ContactScreen> {
               Text(
                 t['contactDescription'],
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: Responsive.fontSize(context, 16),
                     ),
                 textAlign: TextAlign.center,
@@ -370,7 +370,7 @@ class _ContactScreenState extends State<ContactScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.orange),
                 ),
@@ -488,7 +488,7 @@ class _ContactInfoItem extends StatelessWidget {
           color: AppTheme.cardBackground,
           borderRadius: BorderRadius.circular(15),
           border: onTap != null
-              ? Border.all(color: AppTheme.primaryPurple.withOpacity(0.3))
+              ? Border.all(color: AppTheme.primaryPurple.withValues(alpha: 0.3))
               : null,
         ),
         child: Row(
@@ -543,7 +543,7 @@ class _SocialButton extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.4),
+            color: color.withValues(alpha: 0.4),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
