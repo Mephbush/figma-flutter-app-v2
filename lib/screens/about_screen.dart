@@ -86,7 +86,7 @@ class _AboutScreenState extends State<AboutScreen> {
               Icon(
                 Icons.info_outline,
                 size: Responsive.iconSize(context, 70),
-                color: Colors.white.withValues(alpha: 0.9),
+                color: Colors.white.withOpacity(alpha: 0.9),
               ),
               const SizedBox(height: 16),
               Text(
@@ -280,7 +280,7 @@ class _TeamMember extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryPurple.withValues(alpha: 0.1),
+            color: AppTheme.primaryPurple.withOpacity(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
