@@ -29,9 +29,6 @@ jobs:
           flutter-version: '3.38.0-0.2.pre'
           channel: 'beta'
 
-      - name: Check Gradle version
-        run: ./gradlew --version
-
       - name: Install dependencies
         run: flutter pub get
 
