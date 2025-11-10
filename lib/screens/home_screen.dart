@@ -104,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       t['welcome'],
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity(0.9),
                           ),
                       textAlign: TextAlign.center,
                     ),
