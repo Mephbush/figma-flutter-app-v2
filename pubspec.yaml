@@ -38,7 +38,9 @@ dependencies:
   flutter_dotenv: ^5.1.0
   
   # Icons
-  font_awesome_flutter: ^10.9.0
+  font_awesome_flutter: 
+    path: lib/vendor/font_awesome_flutter/src/fa_icon.dart
+
 
 dev_dependencies:
   flutter_test:
