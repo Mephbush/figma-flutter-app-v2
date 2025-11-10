@@ -69,5 +69,6 @@ flutter:
 dependency_overrides:
   shared_preferences_android: any
   sqflite_android: any
-  path_provider_android: any
   url_launcher_android: any
+  path_provider_android:
+    path: packages/path_provider_android
