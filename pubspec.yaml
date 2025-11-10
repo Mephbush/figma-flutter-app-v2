@@ -67,8 +67,8 @@ flutter:
           weight: 700
 
 dependency_overrides:
-  shared_preferences_android: any
-  sqflite_android: any
-  url_launcher_android: any
+  shared_preferences_android: ^2.4.15
+  sqflite_android: ^2.4.2+2
+  url_launcher_android: ^6.3.24
   path_provider_android:
     path: packages/path_provider_android
