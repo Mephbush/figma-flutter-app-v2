@@ -33,7 +33,6 @@ if (flutterVersionName == null) {
 android {
     namespace "com.viscendstudio.app"
     compileSdkVersion 34
-    ndkVersion flutter.ndkVersion
     ndkVersion = "25.1.8937393"
 
     compileOptions {
