@@ -30,4 +30,13 @@ tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
 
+subprojects {
+    afterEvaluate { project ->
+        if (project.name.contains('path_provider_android')) {
+            project.android {
+                compileSdkVersion 34
+            }
+        }
+    }
+}
 
