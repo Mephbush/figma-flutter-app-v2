@@ -1,0 +1,5 @@
+name: font_awesome_flutter
+description: Local override of font_awesome_flutter to fix compatibility
+version: 10.9.0
+environment:
+  sdk: ">=3.0.0 <4.0.0"
