@@ -70,8 +70,12 @@ jobs:
           fi
 
 
-    - name: Run Gradle with stacktrace
-      run: ./gradlew assembleDebug --stacktrace
+    - name: Check outdated packages
+      run: flutter pub outdated
+
+    - name: Upgrade packages
+      run: flutter pub upgrade
+
 
     - name: Build APK (Debug)
       run: flutter build apk --debug -v
