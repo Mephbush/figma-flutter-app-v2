@@ -73,7 +73,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         child: Text(
                           t['portfolioDescription'],
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: Colors.white.withOpacity(0.9),
                               ),
                           textAlign: TextAlign.center,
                         ),
@@ -183,7 +183,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         ? 'دعنا نتحدث عن كيف يمكننا مساعدتك في تحقيق رؤيتك'
                         : "Let's talk about how we can help bring your vision to life",
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Colors.white.withOpacity(0.9),
                         ),
                     textAlign: TextAlign.center,
                   ),
