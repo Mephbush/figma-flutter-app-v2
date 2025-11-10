@@ -9,50 +9,51 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  
   # UI & Design
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  google_fonts: ^6.3.2
-  flutter_svg: ^2.2.2
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
-
+  
   # State Management
   provider: ^6.1.1
-
+  
   # Animations
-  animate_do: ^4.2.0
-  lottie: ^3.3.2
+  animate_do: ^3.1.2
+  lottie: ^3.0.0
   shimmer: ^3.0.0
-
+  
   # HTTP & APIs
   http: ^1.1.2
-
+  
   # Storage
   shared_preferences: ^2.2.2
-
+  
   # Utils
-  intl: ^0.20.2
-  url_launcher: ^6.3.2
-  flutter_dotenv: ^6.0.0
-
+  intl: any
+  url_launcher: ^6.2.1
+  flutter_dotenv: ^5.1.0
+  
   # Icons
   font_awesome_flutter: ^10.9.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.2
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
-
+  
   assets:
     - assets/images/
     - assets/icons/
     - assets/animations/
-
+  
   fonts:
     - family: Cairo
       fonts:
