@@ -66,9 +66,4 @@ flutter:
         - asset: assets/fonts/Tajawal-Bold.ttf
           weight: 700
 
-dependency_overrides:
-  path_provider_android: ^2.2.20
-  shared_preferences_android: ^2.4.15
-  sqflite_android: ^2.3.0
-  url_launcher_android: ^6.3.24
 
