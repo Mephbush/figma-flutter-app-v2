@@ -106,7 +106,7 @@ jobs:
     #     ../gradlew assembleDebug --warning-mode all
 
     - name: Build APK (Debug)
-      run: flutter build apk --debug -v
+      run: flutter build apk --debug
 
     - name: Build APK (Release)
       run: flutter build apk --release
