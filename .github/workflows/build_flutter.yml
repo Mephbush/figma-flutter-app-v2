@@ -105,11 +105,11 @@ jobs:
       run: flutter pub upgrade
 
     # ✅ نحذف هذا الجزء لأنه يكرر بناء يدوي خارج Flutter
-    # - name: Run Gradle from android/
-    #   working-directory: android
-    #   run: |
-    #     chmod +x ../gradlew
-    #     ../gradlew assembleDebug --warning-mode all
+    - name: Run Gradle from android/
+      working-directory: android
+      run: |
+        gradlew assembleDebug --warning-mode all
+      # chmod +x ../gradlew
 
     - name: Build APK (Debug)
       run: flutter build apk --debug
