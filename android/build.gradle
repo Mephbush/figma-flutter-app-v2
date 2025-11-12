@@ -33,10 +33,4 @@ tasks.register("clean", Delete) {
 }
 
 
-android.applicationVariants.all { variant ->
-    variant.outputs.all { output ->
-        def newName = "${variant.name}-${variant.versionName}.apk"
-        output.outputFileName = newName
-    }
-}
 
