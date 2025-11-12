@@ -88,6 +88,11 @@ jobs:
         echo "flutter.versionCode=1" >> android/local.properties
         echo "flutter.versionName=1.0.0" >> android/local.properties
 
+    - name: Patch OutputFile usage
+      run: |
+        find . -name "build.gradle" -exec sed -i 's/OutputFile//g' {} +
+
+
 
     - name: Build APK (Debug)
       run: flutter build apk --debug -v
