@@ -23,11 +23,6 @@ jobs:
         java-version: '17'
         cache: 'gradle'
 
-    # - name: Force Gradle compatibility versions
-    #   run: |
-    #     sed -i 's/com.android.tools.build:gradle:.*/com.android.tools.build:gradle:4.2.2/' android/build.gradle
-    #     sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\\/distributions\\/gradle-6.9.2-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
-    #     echo "✅ Forced Gradle 6.9.2 + AGP 4.2.2 for OutputFile compatibility"
 
 
     - name: Setup Flutter
@@ -73,43 +68,14 @@ jobs:
         echo "flutter.versionCode=1" >> android/local.properties
         echo "flutter.versionName=1.0.0" >> android/local.properties
 
-    - name: cleaning 
-      run: |
-        rm -rf ~/.gradle/caches/
-      # cd android && ./gradlew wrapper --gradle-version=8.6
+    - name: Clean Gradle cache
+      run: rm -rf ~/.gradle/caches/
 
 
-    # ✅ الخطوة الجديدة: إصلاح شامل لجميع المشاكل المعروفة
-    - name: Patch Gradle for OutputFile and legacy calls
-      run: |
-        echo "🔧 Patching Gradle files to remove deprecated OutputFile usage..."
-        find . -name "build.gradle" -exec sed -i 's/OutputFile//g' {} +
-        find . -name "build.gradle" -exec sed -i 's/output.outputFileName/output.outputFile/g' {} +
-        find . -name "build.gradle" -exec sed -i 's/output.outputFileName/outputFileName/g' {} +
-        find . -name "build.gradle" -exec sed -i 's/output.getFile()/outputFile/g' {} +
-        echo "✅ All Gradle files patched successfully."
 
-    - name: Patch font_awesome_flutter to fix withValues error
-      run: |
-          FILE="$HOME/.pub-cache/hosted/pub.dev/font_awesome_flutter-10.9.0/lib/src/fa_icon.dart"
-          if [ -f "$FILE" ]; then
-            sed -i 's/withValues(alpha: iconColor.a \* iconOpacity)/withOpacity(iconColor.opacity * iconOpacity)/' "$FILE"
-          else
-            echo "fa_icon.dart not found, skipping patch"
-          fi
+    - name: Check Flutter and dependencies
+      run: flutter pub get
 
-    - name: Check outdated packages
-      run: flutter pub outdated
-
-    - name: Upgrade packages
-      run: flutter pub upgrade
-
-    # ✅ نحذف هذا الجزء لأنه يكرر بناء يدوي خارج Flutter
-    # - name: Run Gradle from android/
-    #   working-directory: android
-    #   run: |
-    #     gradlew assembleDebug --warning-mode all
-      # chmod +x ../gradlew
 
     - name: Fix permissions (optional)
       run: chmod -R 755 android
