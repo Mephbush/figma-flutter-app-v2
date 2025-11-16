@@ -23,13 +23,6 @@ jobs:
         java-version: '17'
         cache: 'gradle'
 
-    # - name: Force Gradle compatibility versions
-    #   run: |
-    #     sed -i 's/com.android.tools.build:gradle:.*/com.android.tools.build:gradle:4.2.2/' android/build.gradle
-    #     sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\\/distributions\\/gradle-6.9.2-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
-    #     echo "✅ Forced Gradle 6.9.2 + AGP 4.2.2 for OutputFile compatibility"
-
-
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
