@@ -1,2 +1,42 @@
-// This file is deprecated - use settings.gradle.kts instead
-// All build configuration is now in settings.gradle.kts
+pluginManagement {
+    def flutterSdkPath = {
+        def properties = new Properties()
+        file("local.properties").withInputStream { properties.load(it) }
+        def flutterSdkPath = properties.getProperty("flutter.sdk")
+        assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+        return flutterSdkPath
+    }
+    settings.ext.flutterSdkPath = flutterSdkPath()
+
+    includeBuild("${settings.ext.flutterSdkPath}/packages/flutter_tools/gradle")
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+
+    plugins {
+        id("com.android.application") version "8.9.1" apply false
+        id("kotlin-android") version "2.1.0" apply false
+        id("dev.flutter.flutter-gradle-plugin") version "1.0.0" apply false
+    }
+}
+
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+}
+
+include ":app"
+
+def flutterProjectRoot = rootDir.getAbsoluteFile().toPath()
+
+def plugins = new Properties()
+def pluginsFile = new File(flutterProjectRoot.toFile(), '.flutter-plugins')
+if (pluginsFile.exists()) {
+    pluginsFile.withReader('UTF-8') { reader -> plugins.load(reader) }
+    plugins.each { name, path ->
+        include ":$name"
+        project(":$name").projectDir = new File(path)
+    }
+}
