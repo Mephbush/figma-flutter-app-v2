@@ -1,20 +1,2 @@
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-rootProject.layout.buildDirectory = file('../build')
-
-subprojects {
-    project.layout.buildDirectory = rootProject.layout.buildDirectory.dir(project.name)
-}
-
-subprojects {
-    project.evaluationDependsOn(':app')
-}
-
-tasks.register("clean", Delete) {
-    delete rootProject.layout.buildDirectory
-}
+// This file is deprecated - use build.gradle.kts instead
+// All build configuration is now in build.gradle.kts
