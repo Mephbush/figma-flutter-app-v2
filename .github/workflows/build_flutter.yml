@@ -38,6 +38,7 @@ jobs:
         cache: true
 
     - name: create flutter
+      working-directory: android
       run: flutter create .
 
     - name: Install Gradle 8.7
