@@ -29,7 +29,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.viscendstudio.app"
-    compileSdk 33
+    compileSdk 34
     ndkVersion = "25.1.8937393"
 
     compileOptions {
@@ -48,7 +48,7 @@ android {
     defaultConfig {
         applicationId "com.viscendstudio.app"
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -65,5 +65,5 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.10"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24"
 }
