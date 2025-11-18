@@ -1,0 +1,107 @@
+name: Flutter Android Build & Deploy
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+      
+      - name: Get Flutter dependencies
+        run: flutter pub get
+      
+      - name: Verify Gradle setup
+        run: |
+          echo "=== Checking Gradle files ==="
+          ls -la android/
+          echo ""
+          echo "=== Checking gradle wrapper ==="
+          ls -la android/gradle/wrapper/
+          echo ""
+          echo "=== gradle-wrapper.properties ==="
+          cat android/gradle/wrapper/gradle-wrapper.properties
+      
+      - name: Verify build.gradle files
+        run: |
+          echo "=== android/settings.gradle.kts ==="
+          head -10 android/settings.gradle.kts
+          echo ""
+          echo "=== android/build.gradle.kts ==="
+          head -10 android/build.gradle.kts
+          echo ""
+          echo "=== android/app/build.gradle.kts ==="
+          head -10 android/app/build.gradle.kts
+      
+      - name: Check for deprecated OutputFile API
+        run: |
+          echo "=== Checking for OutputFile API usage ==="
+          if grep -r "variant\.outputs\|outputFileName\|output\.outputFile" android/ --include="*.gradle" --include="*.gradle.kts"; then
+            echo "❌ WARNING: Found deprecated OutputFile API usage"
+            exit 1
+          else
+            echo "✅ No deprecated OutputFile API found"
+          fi
+      
+      - name: Verify Java version
+        run: |
+          echo "=== Java Version ==="
+          java -version
+      
+      - name: Clean build
+        run: |
+          cd android
+          ./gradlew clean
+      
+      - name: Build APK (Debug)
+        run: |
+          flutter build apk --debug --verbose 2>&1 | tee build.log
+      
+      - name: Verify Build Output
+        if: success()
+        run: |
+          echo "=== Build Successful ==="
+          ls -lh build/app/outputs/apk/debug/
+          echo "APK size:"
+          du -h build/app/outputs/apk/debug/*.apk
+      
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: build/app/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+      
+      - name: Check build logs on failure
+        if: failure()
+        run: |
+          echo "=== Build Failed - Analyzing Logs ==="
+          if [ -f build.log ]; then
+            echo "=== Flutter Build Output ==="
+            tail -50 build.log
+          fi
+          echo ""
+          echo "=== Gradle Build Output ==="
+          cd android
+          ./gradlew assembleDebug --stacktrace 2>&1 | tail -100
