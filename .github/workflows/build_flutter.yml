@@ -133,6 +133,11 @@ jobs:
         echo "=== Gradle configuration ==="
         ls -la android/app/build.gradle
 
+    - name: Analyze Code
+      run: |
+        echo "=== Running Flutter analyze ==="
+        flutter analyze --no-fatal-infos
+
     - name: Build APK (Debug)
       run: |
         echo "=== Starting Debug APK Build ==="
@@ -143,7 +148,7 @@ jobs:
       if: failure()
       run: |
         echo "=== Full Build Log ==="
-        cat build-debug.log
+        cat build-debug.log || echo "No build log found"
 
     - name: Find APK Location
       if: always()
