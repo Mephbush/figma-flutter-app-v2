@@ -119,6 +119,11 @@ jobs:
     - name: Build APK (Debug)
       run: flutter build apk --debug --verbose 2>&1 | tee build-debug.log
 
+    - name: Find APK Location
+      run: |
+        echo "Searching for APK files..."
+        find build -name "app-debug.apk" -o -name "app-release.apk" 2>/dev/null || echo "No APK found"
+
     - name: Build APK (Release)
       run: flutter build apk --release --verbose 2>&1 | tee build-release.log
 
@@ -129,21 +134,50 @@ jobs:
       if: success()
       run: |
         echo "=========================================="
+        echo "Checking for build outputs..."
+        echo "=========================================="
+
+        DEBUG_APK=""
+        RELEASE_APK=""
+        BUNDLE_AAB=""
+
+        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+          DEBUG_APK="build/app/outputs/flutter-apk/app-debug.apk"
+        elif [ -f "build/app/outputs/apk/debug/app-debug.apk" ]; then
+          DEBUG_APK="build/app/outputs/apk/debug/app-debug.apk"
+        fi
+
+        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+          RELEASE_APK="build/app/outputs/flutter-apk/app-release.apk"
+        elif [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
+          RELEASE_APK="build/app/outputs/apk/release/app-release.apk"
+        fi
+
+        if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+          BUNDLE_AAB="build/app/outputs/bundle/release/app-release.aab"
+        fi
+
+        if [ -z "$DEBUG_APK" ] && [ -z "$RELEASE_APK" ] && [ -z "$BUNDLE_AAB" ]; then
+          echo "❌ ERROR: No build outputs found!"
+          find build -type f \( -name "*.apk" -o -name "*.aab" \) 2>/dev/null || true
+          exit 1
+        fi
+
         echo "✅ BUILD SUCCESSFUL"
         echo "=========================================="
-        
-        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
-          echo "Debug APK: $(du -h build/app/outputs/flutter-apk/app-debug.apk | cut -f1)"
+
+        if [ -n "$DEBUG_APK" ]; then
+          echo "Debug APK: $(du -h "$DEBUG_APK" | cut -f1)"
         fi
-        
-        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-          echo "Release APK: $(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)"
+
+        if [ -n "$RELEASE_APK" ]; then
+          echo "Release APK: $(du -h "$RELEASE_APK" | cut -f1)"
         fi
-        
-        if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
-          echo "App Bundle: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
+
+        if [ -n "$BUNDLE_AAB" ]; then
+          echo "App Bundle: $(du -h "$BUNDLE_AAB" | cut -f1)"
         fi
-        
+
         echo "=========================================="
 
     - name: Upload Debug APK
@@ -151,7 +185,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-debug-apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
+        path: build/app/outputs/apk/debug/app-debug.apk
         retention-days: 7
 
     - name: Upload Release APK
@@ -159,7 +193,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: build/app/outputs/apk/release/app-release.apk
         retention-days: 30
 
     - name: Upload App Bundle
