@@ -115,79 +115,88 @@ jobs:
           flutter build apk --debug --verbose 2>&1 | tee build-debug.log
           echo ""
           echo "✅ Debug APK build completed"
-      
+
+      - name: Find APK Paths
+        run: |
+          echo "=== Searching for APK files ==="
+          find build -type f \( -name "app-debug.apk" -o -name "app-release.apk" -o -name "app-release.aab" \) 2>/dev/null || echo "Searching..."
+
       - name: Verify Debug APK
         if: success()
         run: |
           echo "=== Verifying Debug APK ==="
-          APK_PATH="build/app/outputs/flutter-apk/app-debug.apk"
-          if [ -f "$APK_PATH" ]; then
-            echo "✅ APK found: $APK_PATH"
-            ls -lh "$APK_PATH"
-            echo "APK Size: $(du -h "$APK_PATH" | cut -f1)"
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            DEBUG_APK="build/app/outputs/flutter-apk/app-debug.apk"
+          elif [ -f "build/app/outputs/apk/debug/app-debug.apk" ]; then
+            DEBUG_APK="build/app/outputs/apk/debug/app-debug.apk"
           else
-            echo "❌ ERROR: APK not found at $APK_PATH"
+            echo "❌ ERROR: Debug APK not found"
             exit 1
           fi
-      
+          echo "✅ APK found: $DEBUG_APK"
+          ls -lh "$DEBUG_APK"
+          echo "APK Size: $(du -h "$DEBUG_APK" | cut -f1)"
+
       - name: Build APK (Release)
         run: |
           echo "=== Starting Release APK Build ==="
           flutter build apk --release --verbose 2>&1 | tee build-release.log
           echo ""
           echo "✅ Release APK build completed"
-      
+
       - name: Verify Release APK
         if: success()
         run: |
           echo "=== Verifying Release APK ==="
-          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
-          if [ -f "$APK_PATH" ]; then
-            echo "✅ APK found: $APK_PATH"
-            ls -lh "$APK_PATH"
-            echo "APK Size: $(du -h "$APK_PATH" | cut -f1)"
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            RELEASE_APK="build/app/outputs/flutter-apk/app-release.apk"
+          elif [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
+            RELEASE_APK="build/app/outputs/apk/release/app-release.apk"
           else
-            echo "❌ ERROR: APK not found at $APK_PATH"
+            echo "❌ ERROR: Release APK not found"
             exit 1
           fi
-      
+          echo "✅ APK found: $RELEASE_APK"
+          ls -lh "$RELEASE_APK"
+          echo "APK Size: $(du -h "$RELEASE_APK" | cut -f1)"
+
       - name: Build App Bundle (Release)
         run: |
           echo "=== Starting App Bundle Build ==="
           flutter build appbundle --release --verbose 2>&1 | tee build-bundle.log
           echo ""
           echo "✅ App Bundle build completed"
-      
+
       - name: Verify App Bundle
         if: success()
         run: |
           echo "=== Verifying App Bundle ==="
-          BUNDLE_PATH="build/app/outputs/bundle/release/app-release.aab"
-          if [ -f "$BUNDLE_PATH" ]; then
-            echo "✅ Bundle found: $BUNDLE_PATH"
-            ls -lh "$BUNDLE_PATH"
-            echo "Bundle Size: $(du -h "$BUNDLE_PATH" | cut -f1)"
+          if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+            BUNDLE_PATH="build/app/outputs/bundle/release/app-release.aab"
           else
-            echo "❌ ERROR: Bundle not found at $BUNDLE_PATH"
+            echo "❌ ERROR: Bundle not found"
             exit 1
           fi
-      
+          echo "✅ Bundle found: $BUNDLE_PATH"
+          ls -lh "$BUNDLE_PATH"
+          echo "Bundle Size: $(du -h "$BUNDLE_PATH" | cut -f1)"
+
       - name: Upload Debug APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: viscend-studio-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/apk/debug/app-debug.apk
           retention-days: 7
-      
+
       - name: Upload Release APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: viscend-studio-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/apk/release/app-release.apk
           retention-days: 30
-      
+
       - name: Upload App Bundle
         if: success()
         uses: actions/upload-artifact@v4
