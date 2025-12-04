@@ -117,9 +117,17 @@ jobs:
           echo "✅ Debug APK build completed"
 
       - name: Find APK Paths
+        if: always()
         run: |
           echo "=== Searching for APK files ==="
-          find build -type f \( -name "app-debug.apk" -o -name "app-release.apk" -o -name "app-release.aab" \) 2>/dev/null || echo "Searching..."
+          if find build -name "*.apk" -o -name "*.aab" 2>/dev/null | grep -q .; then
+            find build -name "*.apk" -o -name "*.aab"
+          else
+            echo "❌ No APK files found. Checking build directory structure:"
+            ls -la build/ 2>/dev/null || echo "build/ directory not found"
+            ls -la build/app/ 2>/dev/null || echo "build/app/ directory not found"
+            ls -la build/app/outputs/ 2>/dev/null || echo "build/app/outputs/ directory not found"
+          fi
 
       - name: Verify Debug APK
         if: success()
