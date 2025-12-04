@@ -126,6 +126,11 @@ jobs:
           rm -rf android/app/build/
           echo "✅ Build directories cleaned"
       
+      - name: Analyze Code
+        run: |
+          echo "=== Running Flutter analyze ==="
+          flutter analyze --no-fatal-infos
+
       - name: Build APK (Debug)
         run: |
           echo "=== Starting Debug APK Build ==="
