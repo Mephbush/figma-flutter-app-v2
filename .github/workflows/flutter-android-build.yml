@@ -116,6 +116,12 @@ jobs:
           echo ""
           echo "✅ Debug APK build completed"
 
+      - name: Show Build Log on Failure
+        if: failure()
+        run: |
+          echo "=== Full Build Log ==="
+          cat build-debug.log || echo "No build log found"
+
       - name: Find APK Paths
         if: always()
         run: |
