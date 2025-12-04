@@ -23,13 +23,6 @@ jobs:
         java-version: '17'
         cache: 'gradle'
 
-    # - name: Force Gradle compatibility versions
-    #   run: |
-    #     sed -i 's/com.android.tools.build:gradle:.*/com.android.tools.build:gradle:4.2.2/' android/build.gradle
-    #     sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\\/distributions\\/gradle-6.9.2-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
-    #     echo "✅ Forced Gradle 6.9.2 + AGP 4.2.2 for OutputFile compatibility"
-
-
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
@@ -37,18 +30,16 @@ jobs:
         channel: 'stable'
         cache: true
 
-    - name: create flutter
-      working-directory: android
-      run: flutter create .
-
-    - name: Install Gradle 8.7
-      uses: gradle/gradle-build-action@v2
-      with:
-          gradle-version: 8.7
-
-    - name: Generate Gradle Wrapper (if missing)
-      working-directory: android
-      run: gradle wrapper
+    - name: Display Environment Info
+      run: |
+        echo "=== Java Version ==="
+        java -version
+        echo ""
+        echo "=== Flutter Version ==="
+        flutter --version
+        echo ""
+        echo "=== Flutter Doctor ==="
+        flutter doctor -v
 
     - name: Cache Flutter Dependencies
       uses: actions/cache@v4
@@ -67,77 +58,96 @@ jobs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           android/.gradle
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - name: Flutter Doctor
-      run: flutter doctor -v
-
-    - name: Clean Flutter Build
-      run: flutter clean
-
-    - name: Get Flutter Dependencies
-      run: flutter pub get
-
-    - name: Create local.properties
+    - name: Setup Android SDK paths
       run: |
         echo "flutter.sdk=$FLUTTER_HOME" > android/local.properties
         echo "flutter.versionCode=1" >> android/local.properties
         echo "flutter.versionName=1.0.0" >> android/local.properties
+        echo ""
+        echo "=== android/local.properties ==="
+        cat android/local.properties
 
-    - name: cleaning 
+    - name: Verify Build Configuration
       run: |
-        rm -rf ~/.gradle/caches/
-      # cd android && ./gradlew wrapper --gradle-version=8.6
+        echo "=== Gradle Wrapper Version ==="
+        cat android/gradle/wrapper/gradle-wrapper.properties
+        echo ""
+        echo "=== Gradle Build Files ==="
+        ls -la android/build.gradle android/settings.gradle android/app/build.gradle
+        echo ""
+        echo "=== Android Configuration ==="
+        echo "AGP Version:"
+        grep "com.android.tools.build:gradle:" android/build.gradle | head -1
+        echo ""
+        echo "Kotlin Version:"
+        grep "ext.kotlin_version" android/build.gradle | head -1
 
-
-    # ✅ الخطوة الجديدة: إصلاح شامل لجميع المشاكل المعروفة
-    - name: Patch Gradle for OutputFile and legacy calls
+    - name: Check for Build Issues
       run: |
-        echo "🔧 Patching Gradle files to remove deprecated OutputFile usage..."
-        find . -name "build.gradle" -exec sed -i 's/OutputFile//g' {} +
-        find . -name "build.gradle" -exec sed -i 's/output.outputFileName/output.outputFile/g' {} +
-        find . -name "build.gradle" -exec sed -i 's/output.outputFileName/outputFileName/g' {} +
-        find . -name "build.gradle" -exec sed -i 's/output.getFile()/outputFile/g' {} +
-        echo "✅ All Gradle files patched successfully."
+        echo "=== Checking Gradle Files for Merge Conflicts ==="
+        if grep -r "<<<<<<\|======\|>>>>>>" android/ --include="*.gradle"; then
+          echo "❌ ERROR: Merge conflicts found in Gradle files"
+          exit 1
+        else
+          echo "✅ No merge conflicts found"
+        fi
+        
+        echo ""
+        echo "=== Checking for Deprecated OutputFile API ==="
+        if grep -r "OutputFile\|outputFileName\|variant\.outputs" android/ --include="*.gradle"; then
+          echo "❌ ERROR: Found deprecated OutputFile API"
+          exit 1
+        else
+          echo "✅ No deprecated OutputFile API found"
+        fi
 
-    - name: Patch font_awesome_flutter to fix withValues error
+    - name: Clean Flutter Build
       run: |
-          FILE="$HOME/.pub-cache/hosted/pub.dev/font_awesome_flutter-10.9.0/lib/src/fa_icon.dart"
-          if [ -f "$FILE" ]; then
-            sed -i 's/withValues(alpha: iconColor.a \* iconOpacity)/withOpacity(iconColor.opacity * iconOpacity)/' "$FILE"
-          else
-            echo "fa_icon.dart not found, skipping patch"
-          fi
+        flutter clean
+        rm -rf build/
+        rm -rf android/.gradle/
+        rm -rf android/app/build/
+        echo "✅ Build artifacts cleaned"
 
-    - name: Check outdated packages
-      run: flutter pub outdated
-
-    - name: Upgrade packages
-      run: flutter pub upgrade
-
-    # ✅ نحذف هذا الجزء لأنه يكرر بناء يدوي خارج Flutter
-    # - name: Run Gradle from android/
-    #   working-directory: android
-    #   run: |
-    #     gradlew assembleDebug --warning-mode all
-      # chmod +x ../gradlew
-
-    - name: Fix permissions (optional)
-      run: chmod -R 755 android
-
+    - name: Get Flutter Dependencies
+      run: flutter pub get
 
     - name: Build APK (Debug)
-      run: flutter build apk --debug
+      run: flutter build apk --debug --verbose 2>&1 | tee build-debug.log
 
     - name: Build APK (Release)
-      run: flutter build apk --release
+      run: flutter build apk --release --verbose 2>&1 | tee build-release.log
 
     - name: Build App Bundle (Release)
-      run: flutter build appbundle --release
+      run: flutter build appbundle --release --verbose 2>&1 | tee build-bundle.log
+
+    - name: Verify Build Outputs
+      if: success()
+      run: |
+        echo "=========================================="
+        echo "✅ BUILD SUCCESSFUL"
+        echo "=========================================="
+        
+        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+          echo "Debug APK: $(du -h build/app/outputs/flutter-apk/app-debug.apk | cut -f1)"
+        fi
+        
+        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+          echo "Release APK: $(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)"
+        fi
+        
+        if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+          echo "App Bundle: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
+        fi
+        
+        echo "=========================================="
 
     - name: Upload Debug APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-debug-apk
@@ -145,6 +155,7 @@ jobs:
         retention-days: 7
 
     - name: Upload Release APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-release-apk
@@ -152,15 +163,36 @@ jobs:
         retention-days: 30
 
     - name: Upload App Bundle
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-app-bundle
         path: build/app/outputs/bundle/release/app-release.aab
         retention-days: 30
 
-    - name: Display Build Info
+    - name: Troubleshoot on Failure
+      if: failure()
       run: |
-        echo "✅ Build completed successfully!"
-        echo "📱 APK Size (Debug): $(du -h build/app/outputs/flutter-apk/app-debug.apk | cut -f1)"
-        echo "📱 APK Size (Release): $(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)"
-        echo "📦 Bundle Size: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
+        echo "=========================================="
+        echo "❌ BUILD FAILED"
+        echo "=========================================="
+        
+        if [ -f build-debug.log ]; then
+          echo "=== Last 100 lines of build log ==="
+          tail -100 build-debug.log
+        fi
+        
+        echo ""
+        echo "=== Gradle Configuration ==="
+        cat android/gradle/wrapper/gradle-wrapper.properties
+        
+        echo ""
+        echo "=== Android Build Files (First 20 lines) ==="
+        echo "--- build.gradle ---"
+        head -20 android/build.gradle
+        echo ""
+        echo "--- app/build.gradle ---"
+        head -30 android/app/build.gradle
+        
+        echo ""
+        echo "=========================================="
