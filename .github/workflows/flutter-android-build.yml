@@ -85,7 +85,24 @@ jobs:
           done
       
       - name: Get Flutter Dependencies
-        run: flutter pub get
+        run: |
+          echo "=== Getting Flutter dependencies ==="
+          flutter pub get
+          echo "=== Dependencies obtained ==="
+          echo ""
+          echo "=== Checking Flutter status ==="
+          flutter doctor -v
+
+      - name: Verify Android Setup
+        run: |
+          echo "=== Verifying Android setup ==="
+          ls -la android/app/src/main/
+          echo ""
+          echo "=== Checking AndroidManifest ==="
+          head -20 android/app/src/main/AndroidManifest.xml
+          echo ""
+          echo "=== Gradle configuration ==="
+          ls -la android/app/build.gradle
       
       - name: Verify Plugin Registration
         run: |
