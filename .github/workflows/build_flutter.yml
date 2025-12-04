@@ -117,7 +117,16 @@ jobs:
       run: flutter pub get
 
     - name: Build APK (Debug)
-      run: flutter build apk --debug --verbose 2>&1 | tee build-debug.log
+      run: |
+        echo "=== Starting Debug APK Build ==="
+        flutter build apk --debug --verbose 2>&1 | tee build-debug.log
+        echo "=== Build Completed ==="
+
+    - name: Show Build Log on Failure
+      if: failure()
+      run: |
+        echo "=== Full Build Log ==="
+        cat build-debug.log
 
     - name: Find APK Location
       if: always()
