@@ -120,9 +120,17 @@ jobs:
       run: flutter build apk --debug --verbose 2>&1 | tee build-debug.log
 
     - name: Find APK Location
+      if: always()
       run: |
-        echo "Searching for APK files..."
-        find build -name "app-debug.apk" -o -name "app-release.apk" 2>/dev/null || echo "No APK found"
+        echo "=== Searching for APK files ==="
+        if find build -name "*.apk" -o -name "*.aab" 2>/dev/null | grep -q .; then
+          find build -name "*.apk" -o -name "*.aab"
+        else
+          echo "❌ No APK files found. Checking build directory structure:"
+          ls -la build/ 2>/dev/null || echo "build/ directory not found"
+          ls -la build/app/ 2>/dev/null || echo "build/app/ directory not found"
+          ls -la build/app/outputs/ 2>/dev/null || echo "build/app/outputs/ directory not found"
+        fi
 
     - name: Build APK (Release)
       run: flutter build apk --release --verbose 2>&1 | tee build-release.log
