@@ -169,13 +169,17 @@ jobs:
       if: success()
       run: |
         echo "=== Verifying App Bundle ==="
-        if [ ! -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+        BUNDLE_AAB=$(find build -name "app-release.aab" -type f 2>/dev/null | head -1)
+
+        if [ -z "$BUNDLE_AAB" ]; then
           echo "❌ ERROR: App Bundle not found"
           exit 1
         fi
-        echo "✅ App Bundle found"
-        ls -lh build/app/outputs/bundle/release/app-release.aab
-        echo "Size: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
+
+        echo "✅ App Bundle found: $BUNDLE_AAB"
+        ls -lh "$BUNDLE_AAB"
+        echo "Size: $(du -h "$BUNDLE_AAB" | cut -f1)"
+        echo "BUNDLE_AAB=$BUNDLE_AAB" >> $GITHUB_ENV
 
     - name: Build Summary
       if: success()
