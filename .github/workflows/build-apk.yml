@@ -147,21 +147,17 @@ jobs:
       if: success()
       run: |
         echo "=== Verifying Release APK ==="
-        RELEASE_APK=""
-        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-          RELEASE_APK="build/app/outputs/flutter-apk/app-release.apk"
-        elif [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
-          RELEASE_APK="build/app/outputs/apk/release/app-release.apk"
-        fi
-        
+        RELEASE_APK=$(find build -name "app-release.apk" -type f 2>/dev/null | head -1)
+
         if [ -z "$RELEASE_APK" ]; then
           echo "❌ ERROR: Release APK not found"
           exit 1
         fi
-        
+
         echo "✅ Release APK found: $RELEASE_APK"
         ls -lh "$RELEASE_APK"
         echo "Size: $(du -h "$RELEASE_APK" | cut -f1)"
+        echo "RELEASE_APK=$RELEASE_APK" >> $GITHUB_ENV
 
     - name: Build App Bundle
       run: |
