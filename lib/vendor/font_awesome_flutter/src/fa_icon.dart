@@ -1,8 +1,4 @@
-import 'dart:ui' show Color, BlendMode, Paint;
 import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart' show
-  FontWeight, FontVariation, TextLeadingDistribution,
-  IconTheme, IconThemeData, Shadow;
 
 class FaIcon extends Icon {
   final BlendMode? blendMode;
