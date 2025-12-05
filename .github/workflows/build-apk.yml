@@ -106,17 +106,32 @@ jobs:
       run: |
         echo "=== Building Debug APK ==="
         flutter build apk --debug --verbose 2>&1 | tee build-debug.log
-        echo "✅ Debug APK build completed"
+        BUILD_RESULT=$?
+        echo ""
+        if [ $BUILD_RESULT -eq 0 ]; then
+          echo "✅ Debug APK build completed (Exit code: 0)"
+        else
+          echo "❌ Build failed with exit code: $BUILD_RESULT"
+          echo ""
+          echo "=== Build Log ==="
+          cat build-debug.log
+          exit 1
+        fi
 
     - name: Find APK Files
       if: always()
       run: |
         echo "=== Searching for APK files ==="
-        find build -name "*.apk" -o -name "*.aab" 2>/dev/null
+        if [ -d "build" ]; then
+          echo "build/ directory exists"
+          find build -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "No APK/AAB files found"
+        else
+          echo "❌ build/ directory does not exist"
+        fi
         echo ""
-        echo "=== Detailed Search ==="
-        ls -la build/app/outputs/flutter-apk/ 2>/dev/null || echo "flutter-apk/ not found"
-        ls -la build/app/outputs/apk/debug/ 2>/dev/null || echo "apk/debug/ not found"
+        echo "=== Detailed Directory Check ==="
+        [ -d "build/app/outputs/flutter-apk/" ] && ls -la build/app/outputs/flutter-apk/ || echo "flutter-apk/ not found"
+        [ -d "build/app/outputs/apk/debug/" ] && ls -la build/app/outputs/apk/debug/ || echo "apk/debug/ not found"
 
     - name: Verify Debug APK
       if: success()
