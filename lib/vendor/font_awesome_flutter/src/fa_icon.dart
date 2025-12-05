@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 
 class FaIcon extends Icon {
+  final BlendMode? blendMode;
+  final FontWeight? fontWeight;
+
   const FaIcon(
     super.icon, {
     super.key,
@@ -14,8 +17,8 @@ class FaIcon extends Icon {
     super.semanticLabel,
     super.textDirection,
     super.applyTextScaling,
-    super.blendMode,
-    super.fontWeight,
+    this.blendMode,
+    this.fontWeight,
   });
 
   @override
