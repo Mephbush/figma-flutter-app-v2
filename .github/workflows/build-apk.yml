@@ -95,7 +95,18 @@ jobs:
       run: |
         echo "=== Getting Flutter dependencies ==="
         flutter pub get
+        PUB_RESULT=$?
+        if [ $PUB_RESULT -ne 0 ]; then
+          echo "❌ Failed to get dependencies"
+          exit 1
+        fi
         echo "✅ Dependencies retrieved"
+        echo ""
+        echo "=== Checking pubspec.lock ==="
+        [ -f pubspec.lock ] && echo "✅ pubspec.lock exists" || echo "⚠️  pubspec.lock not found"
+        echo ""
+        echo "=== Checking generated files ==="
+        [ -f .flutter-plugins ] && echo "✅ .flutter-plugins exists" || echo "⚠️  .flutter-plugins not found"
 
     - name: Analyze Code
       run: |
