@@ -187,20 +187,9 @@ jobs:
         echo "=========================================="
         echo "✅ BUILD SUCCESSFUL"
         echo "=========================================="
-        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ] || [ -f "build/app/outputs/apk/debug/app-debug.apk" ]; then
-          DEBUG_FILE=$(find build -name "app-debug.apk" | head -1)
-          echo "Debug APK: $DEBUG_FILE"
-          echo "Size: $(du -h "$DEBUG_FILE" | cut -f1)"
-        fi
-        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ] || [ -f "build/app/outputs/apk/release/app-release.apk" ]; then
-          RELEASE_FILE=$(find build -name "app-release.apk" | head -1)
-          echo "Release APK: $RELEASE_FILE"
-          echo "Size: $(du -h "$RELEASE_FILE" | cut -f1)"
-        fi
-        if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
-          echo "App Bundle: build/app/outputs/bundle/release/app-release.aab"
-          echo "Size: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
-        fi
+        [ -n "${{ env.DEBUG_APK }}" ] && echo "Debug APK: ${{ env.DEBUG_APK }}"
+        [ -n "${{ env.RELEASE_APK }}" ] && echo "Release APK: ${{ env.RELEASE_APK }}"
+        [ -n "${{ env.BUNDLE_AAB }}" ] && echo "App Bundle: ${{ env.BUNDLE_AAB }}"
         echo "=========================================="
 
     - name: Upload Debug APK
