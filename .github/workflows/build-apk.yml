@@ -112,35 +112,30 @@ jobs:
       if: always()
       run: |
         echo "=== Searching for APK files ==="
-        if find build -name "*.apk" -o -name "*.aab" 2>/dev/null | grep -q .; then
-          echo "=== APK Files Found ==="
-          find build -name "*.apk" -o -name "*.aab"
-        else
-          echo "❌ No APK files found"
-          echo ""
-          echo "=== Build Directory Structure ==="
-          find build -type d 2>/dev/null | head -20 || echo "build/ not found"
-        fi
+        find build -name "*.apk" -o -name "*.aab" 2>/dev/null
+        echo ""
+        echo "=== Detailed Search ==="
+        ls -la build/app/outputs/flutter-apk/ 2>/dev/null || echo "flutter-apk/ not found"
+        ls -la build/app/outputs/apk/debug/ 2>/dev/null || echo "apk/debug/ not found"
 
     - name: Verify Debug APK
       if: success()
       run: |
         echo "=== Verifying Debug APK ==="
-        DEBUG_APK=""
-        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
-          DEBUG_APK="build/app/outputs/flutter-apk/app-debug.apk"
-        elif [ -f "build/app/outputs/apk/debug/app-debug.apk" ]; then
-          DEBUG_APK="build/app/outputs/apk/debug/app-debug.apk"
-        fi
-        
+        DEBUG_APK=$(find build -name "app-debug.apk" -type f 2>/dev/null | head -1)
+
         if [ -z "$DEBUG_APK" ]; then
           echo "❌ ERROR: Debug APK not found"
+          echo ""
+          echo "=== All files in build/ ==="
+          find build -type f | grep -i apk || echo "No APK files found"
           exit 1
         fi
-        
+
         echo "✅ Debug APK found: $DEBUG_APK"
         ls -lh "$DEBUG_APK"
         echo "Size: $(du -h "$DEBUG_APK" | cut -f1)"
+        echo "DEBUG_APK=$DEBUG_APK" >> $GITHUB_ENV
 
     - name: Build Release APK
       run: |
