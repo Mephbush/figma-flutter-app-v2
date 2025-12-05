@@ -1,11 +1,32 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart' show
   BlendMode,
   FontWeight,
   FontVariation,
   TextLeadingDistribution,
   Paint,
-  Shadow;
+  Shadow,
+  Icon,
+  IconTheme,
+  IconThemeData,
+  IconData,
+  TextStyle,
+  TextSpan,
+  RichText,
+  Transform,
+  Semantics,
+  ExcludeSemantics,
+  SizedBox,
+  Directionality,
+  TextDirection,
+  MediaQuery,
+  Color,
+  Matrix4,
+  Alignment;
+import 'package:flutter/widgets.dart' show
+  Widget,
+  BuildContext,
+  kDefaultFontSize,
+  debugCheckHasDirectionality;
 
 class FaIcon extends Icon {
   final BlendMode? blendMode;
