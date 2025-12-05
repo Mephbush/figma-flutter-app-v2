@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart' show BlendMode, FontWeight;
+import 'package:flutter/material.dart' show BlendMode, FontWeight, FontVariation, TextLeadingDistribution;
 
 class FaIcon extends Icon {
   final BlendMode? blendMode;
