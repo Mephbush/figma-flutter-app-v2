@@ -156,10 +156,19 @@ jobs:
         echo "DEBUG_APK=$DEBUG_APK" >> $GITHUB_ENV
 
     - name: Build Release APK
+      if: success()
       run: |
         echo "=== Building Release APK ==="
         flutter build apk --release --verbose 2>&1 | tee build-release.log
-        echo "✅ Release APK build completed"
+        BUILD_RESULT=$?
+        echo ""
+        if [ $BUILD_RESULT -eq 0 ]; then
+          echo "✅ Release APK build completed"
+        else
+          echo "❌ Release build failed with exit code: $BUILD_RESULT"
+          tail -150 build-release.log
+          exit 1
+        fi
 
     - name: Verify Release APK
       if: success()
