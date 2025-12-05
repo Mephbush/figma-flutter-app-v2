@@ -117,7 +117,7 @@ jobs:
     - name: Build Debug APK
       run: |
         echo "=== Building Debug APK ==="
-        flutter build apk --debug --verbose 2>&1 | tee build-debug.log
+        flutter build apk --debug 2>&1 | tee build-debug.log
         BUILD_RESULT=$?
         echo ""
         if [ $BUILD_RESULT -eq 0 ]; then
@@ -125,7 +125,10 @@ jobs:
         else
           echo "❌ Build failed with exit code: $BUILD_RESULT"
           echo ""
-          echo "=== Build Log ==="
+          echo "=== First Error in Log ==="
+          grep "error\|Error\|ERROR\|FAILURE\|failed\|Failed" build-debug.log | head -1 || echo "No error message found"
+          echo ""
+          echo "=== Full Build Log ==="
           cat build-debug.log
           exit 1
         fi
