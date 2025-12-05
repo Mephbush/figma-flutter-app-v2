@@ -135,7 +135,6 @@ jobs:
         [ -d "build/app/outputs/apk/debug/" ] && ls -la build/app/outputs/apk/debug/ || echo "apk/debug/ not found"
 
     - name: Verify Debug APK
-      if: success()
       run: |
         echo "=== Verifying Debug APK ==="
         DEBUG_APK=$(find build -name "app-debug.apk" -type f 2>/dev/null | head -1)
@@ -143,8 +142,11 @@ jobs:
         if [ -z "$DEBUG_APK" ]; then
           echo "❌ ERROR: Debug APK not found"
           echo ""
-          echo "=== All files in build/ ==="
-          find build -type f | grep -i apk || echo "No APK files found"
+          echo "=== Build Log (Last 150 lines) ==="
+          tail -150 build-debug.log
+          echo ""
+          echo "=== Searching build/ recursively ==="
+          find build -type f 2>/dev/null | head -20 || echo "No files found in build/"
           exit 1
         fi
 
