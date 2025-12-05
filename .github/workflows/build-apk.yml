@@ -153,11 +153,17 @@ jobs:
         if [ -z "$DEBUG_APK" ]; then
           echo "❌ ERROR: Debug APK not found"
           echo ""
-          echo "=== Build Log (Last 150 lines) ==="
-          tail -150 build-debug.log
+          echo "=== Finding First ERROR in Build Log ==="
+          grep -n "^Error\|^FAILURE\|^\[ERROR\]" build-debug.log | head -5 || echo "No ERROR line found"
           echo ""
-          echo "=== Searching build/ recursively ==="
-          find build -type f 2>/dev/null | head -20 || echo "No files found in build/"
+          echo "=== Context Around Errors ==="
+          grep -B 5 "^Error\|^FAILURE" build-debug.log | head -30 || echo "No context found"
+          echo ""
+          echo "=== Last 100 lines of Build Log ==="
+          tail -100 build-debug.log
+          echo ""
+          echo "=== Build Directory Contents ==="
+          find build -type f 2>/dev/null | head -30
           exit 1
         fi
 
