@@ -6,10 +6,9 @@ buildscript {
     }
 
     dependencies {
-    classpath 'com.android.tools.build:gradle:8.5.0'
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-}
-
+        classpath 'com.android.tools.build:gradle:8.5.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 
 allprojects {
@@ -28,25 +27,6 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
-
-gradle.afterProject { project ->
-    project.plugins.withId("com.android.library") {
-        if (project.hasProperty("android")) {
-            try {
-                project.android.applicationVariants?.all { variant ->
-                    variant.outputs?.each { output ->
-                        output.outputFileName = "${variant.name}.apk"
-                    }
-                }
-            } catch (ignored) {
-                println("Skipped legacy outputFile handling for ${project.name}")
-            }
-        }
-    }
-}
-
-

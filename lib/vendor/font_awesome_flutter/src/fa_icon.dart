@@ -1,6 +1,38 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart' show
+import 'package:flutter/material.dart' show
+  BlendMode,
+  FontWeight,
+  FontVariation,
+  TextLeadingDistribution,
+  Paint,
+  Shadow,
+  Icon,
+  IconTheme,
+  IconThemeData,
+  IconData,
+  TextStyle,
+  TextSpan,
+  RichText,
+  Transform,
+  Semantics,
+  ExcludeSemantics,
+  SizedBox,
+  Directionality,
+  TextDirection,
+  MediaQuery,
+  Color,
+  Matrix4,
+  Alignment;
+import 'package:flutter/widgets.dart' show
+  Widget,
+  BuildContext,
+  kDefaultFontSize,
+  debugCheckHasDirectionality;
 
 class FaIcon extends Icon {
+  final BlendMode? blendMode;
+  final FontWeight? fontWeight;
+
   const FaIcon(
     super.icon, {
     super.key,
@@ -14,8 +46,8 @@ class FaIcon extends Icon {
     super.semanticLabel,
     super.textDirection,
     super.applyTextScaling,
-    super.blendMode,
-    super.fontWeight,
+    this.blendMode,
+    this.fontWeight,
   });
 
   @override
@@ -95,7 +127,7 @@ class FaIcon extends Icon {
       switch (textDirection) {
         case TextDirection.rtl:
           iconWidget = Transform(
-            transform: Matrix4.identity()..scaleByDouble(-1.0, 1.0, 1.0, 1),
+            transform: Matrix4.identity()..scale(-1.0, 1.0, 1.0),
             alignment: Alignment.center,
             transformHitTests: false,
             child: iconWidget,
