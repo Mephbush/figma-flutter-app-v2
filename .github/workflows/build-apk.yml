@@ -1,22 +1,22 @@
-name: Build Android APK
+name: Build Flutter Android APK
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop, spark-haven]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop, spark-haven]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build Flutter APK
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Setup Java 17
+    - name: Setup Java
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
@@ -38,28 +38,10 @@ jobs:
         echo "=== Flutter Version ==="
         flutter --version
         echo ""
-        echo "=== Flutter Doctor ==="
-        flutter doctor -v
-    - name: Cache Flutter Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.pub-cache
-          .dart_tool
-        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-flutter-
-    - name: Cache Gradle
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-          android/.gradle
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - name: Setup Android SDK paths
+        echo "=== Dart Version ==="
+        dart --version
+
+    - name: Setup Android SDK
       run: |
         echo "flutter.sdk=$FLUTTER_HOME" > android/local.properties
         echo "flutter.versionCode=1" >> android/local.properties
@@ -67,124 +49,234 @@ jobs:
         echo ""
         echo "=== android/local.properties ==="
         cat android/local.properties
-    - name: Verify Build Configuration
+
+    - name: Verify Gradle Configuration
       run: |
-        echo "=== Gradle Wrapper Version ==="
+        echo "=== Gradle Version ==="
         cat android/gradle/wrapper/gradle-wrapper.properties
         echo ""
-        echo "=== Gradle Build Files ==="
+        echo "=== Build Configuration ==="
+        echo "AGP:"
+        grep -m1 "com.android.tools.build:gradle:" android/build.gradle
+        echo ""
+        echo "Kotlin:"
+        grep "ext.kotlin_version" android/build.gradle
+
+    - name: Check Build Files
+      run: |
+        echo "=== Gradle Files ==="
         ls -la android/build.gradle android/settings.gradle android/app/build.gradle
         echo ""
-        echo "=== Android Configuration ==="
-        echo "AGP Version:"
-        grep "com.android.tools.build:gradle:" android/build.gradle | head -1
-        echo ""
-        echo "Kotlin Version:"
-        grep "ext.kotlin_version" android/build.gradle | head -1
-    - name: Check for Build Issues
-      run: |
-        echo "=== Checking Gradle Files for Merge Conflicts ==="
+        echo "=== Checking for Merge Conflicts ==="
         if grep -r "<<<<<<\|======\|>>>>>>" android/ --include="*.gradle"; then
-          echo "❌ ERROR: Merge conflicts found in Gradle files"
+          echo "❌ ERROR: Merge conflicts found"
           exit 1
         else
-          echo "✅ No merge conflicts found"
+          echo "✅ No merge conflicts"
         fi
-        
         echo ""
-        echo "=== Checking for Deprecated OutputFile API ==="
-        if grep -r "OutputFile\|outputFileName\|variant\.outputs" android/ --include="*.gradle"; then
-          echo "❌ ERROR: Found deprecated OutputFile API"
+        echo "=== Checking for Deprecated APIs ==="
+        if grep -r "OutputFile\|variant\.outputs\|output\.outputFile" android/ --include="*.gradle"; then
+          echo "❌ ERROR: Deprecated OutputFile API found"
           exit 1
         else
-          echo "✅ No deprecated OutputFile API found"
+          echo "✅ No deprecated APIs"
         fi
-    - name: Clean Flutter Build
+
+    - name: Clean Build
       run: |
         flutter clean
         rm -rf build/
         rm -rf android/.gradle/
         rm -rf android/app/build/
-        echo "✅ Build artifacts cleaned"
-    - name: Get Flutter Dependencies
-      run: flutter pub get
+        echo "✅ Build cleaned"
 
-    - name: Build APK (Debug)
-      run: flutter build apk --debug --verbose 2>&1 | tee build-debug.log
+    - name: Get Dependencies
+      run: |
+        echo "=== Getting Flutter dependencies ==="
+        flutter pub get
+        PUB_RESULT=$?
+        if [ $PUB_RESULT -ne 0 ]; then
+          echo "❌ Failed to get dependencies"
+          exit 1
+        fi
+        echo "✅ Dependencies retrieved"
+        echo ""
+        echo "=== Checking pubspec.lock ==="
+        [ -f pubspec.lock ] && echo "✅ pubspec.lock exists" || echo "⚠️  pubspec.lock not found"
+        echo ""
+        echo "=== Checking generated files ==="
+        [ -f .flutter-plugins ] && echo "✅ .flutter-plugins exists" || echo "⚠️  .flutter-plugins not found"
 
-    - name: Build APK (Release)
-      run: flutter build apk --release --verbose 2>&1 | tee build-release.log
+    - name: Analyze Code
+      run: |
+        echo "=== Running Flutter Analyze ==="
+        flutter analyze --no-fatal-infos || echo "⚠️  Analyze found issues (warnings only)"
+        echo "✅ Analyze completed"
 
-    - name: Build App Bundle (Release)
-      run: flutter build appbundle --release --verbose 2>&1 | tee build-bundle.log
+    - name: Build Debug APK
+      run: |
+        echo "=== Building Debug APK ==="
+        flutter build apk --debug 2>&1 | tee build-debug.log
+        BUILD_RESULT=$?
+        echo ""
+        if [ $BUILD_RESULT -eq 0 ]; then
+          echo "✅ Debug APK build completed (Exit code: 0)"
+        else
+          echo "❌ Build failed with exit code: $BUILD_RESULT"
+          echo ""
+          echo "=== First Error in Log ==="
+          grep "error\|Error\|ERROR\|FAILURE\|failed\|Failed" build-debug.log | head -1 || echo "No error message found"
+          echo ""
+          echo "=== Full Build Log ==="
+          cat build-debug.log
+          exit 1
+        fi
 
-    - name: Verify Build Outputs
+    - name: Find APK Files
+      if: always()
+      run: |
+        echo "=== Searching for APK files ==="
+        if [ -d "build" ]; then
+          echo "build/ directory exists"
+          find build -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "No APK/AAB files found"
+        else
+          echo "❌ build/ directory does not exist"
+        fi
+        echo ""
+        echo "=== Detailed Directory Check ==="
+        [ -d "build/app/outputs/flutter-apk/" ] && ls -la build/app/outputs/flutter-apk/ || echo "flutter-apk/ not found"
+        [ -d "build/app/outputs/apk/debug/" ] && ls -la build/app/outputs/apk/debug/ || echo "apk/debug/ not found"
+
+    - name: Verify Debug APK
+      run: |
+        echo "=== Verifying Debug APK ==="
+        DEBUG_APK=$(find build -name "app-debug.apk" -type f 2>/dev/null | head -1)
+
+        if [ -z "$DEBUG_APK" ]; then
+          echo "❌ ERROR: Debug APK not found"
+          echo ""
+          echo "=== Finding First ERROR in Build Log ==="
+          grep -n "^Error\|^FAILURE\|^\[ERROR\]" build-debug.log | head -5 || echo "No ERROR line found"
+          echo ""
+          echo "=== Context Around Errors ==="
+          grep -B 5 "^Error\|^FAILURE" build-debug.log | head -30 || echo "No context found"
+          echo ""
+          echo "=== Last 100 lines of Build Log ==="
+          tail -100 build-debug.log
+          echo ""
+          echo "=== Build Directory Contents ==="
+          find build -type f 2>/dev/null | head -30
+          exit 1
+        fi
+
+        echo "✅ Debug APK found: $DEBUG_APK"
+        ls -lh "$DEBUG_APK"
+        echo "Size: $(du -h "$DEBUG_APK" | cut -f1)"
+        echo "DEBUG_APK=$DEBUG_APK" >> $GITHUB_ENV
+
+    - name: Build Release APK
+      if: success()
+      run: |
+        echo "=== Building Release APK ==="
+        flutter build apk --release --verbose 2>&1 | tee build-release.log
+        BUILD_RESULT=$?
+        echo ""
+        if [ $BUILD_RESULT -eq 0 ]; then
+          echo "✅ Release APK build completed"
+        else
+          echo "❌ Release build failed with exit code: $BUILD_RESULT"
+          tail -150 build-release.log
+          exit 1
+        fi
+
+    - name: Verify Release APK
+      if: success()
+      run: |
+        echo "=== Verifying Release APK ==="
+        RELEASE_APK=$(find build -name "app-release.apk" -type f 2>/dev/null | head -1)
+
+        if [ -z "$RELEASE_APK" ]; then
+          echo "❌ ERROR: Release APK not found"
+          exit 1
+        fi
+
+        echo "✅ Release APK found: $RELEASE_APK"
+        ls -lh "$RELEASE_APK"
+        echo "Size: $(du -h "$RELEASE_APK" | cut -f1)"
+        echo "RELEASE_APK=$RELEASE_APK" >> $GITHUB_ENV
+
+    - name: Build App Bundle
+      run: |
+        echo "=== Building App Bundle ==="
+        flutter build appbundle --release --verbose 2>&1 | tee build-bundle.log
+        echo "✅ App Bundle build completed"
+
+    - name: Verify App Bundle
+      if: success()
+      run: |
+        echo "=== Verifying App Bundle ==="
+        BUNDLE_AAB=$(find build -name "app-release.aab" -type f 2>/dev/null | head -1)
+
+        if [ -z "$BUNDLE_AAB" ]; then
+          echo "❌ ERROR: App Bundle not found"
+          exit 1
+        fi
+
+        echo "✅ App Bundle found: $BUNDLE_AAB"
+        ls -lh "$BUNDLE_AAB"
+        echo "Size: $(du -h "$BUNDLE_AAB" | cut -f1)"
+        echo "BUNDLE_AAB=$BUNDLE_AAB" >> $GITHUB_ENV
+
+    - name: Build Summary
       if: success()
       run: |
         echo "=========================================="
         echo "✅ BUILD SUCCESSFUL"
         echo "=========================================="
-        
-        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
-          echo "Debug APK: $(du -h build/app/outputs/flutter-apk/app-debug.apk | cut -f1)"
-        fi
-        
-        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-          echo "Release APK: $(du -h build/app/outputs/flutter-apk/app-release.apk | cut -f1)"
-        fi
-        
-        if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
-          echo "App Bundle: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
-        fi
-        
+        [ -n "${{ env.DEBUG_APK }}" ] && echo "Debug APK: ${{ env.DEBUG_APK }}"
+        [ -n "${{ env.RELEASE_APK }}" ] && echo "Release APK: ${{ env.RELEASE_APK }}"
+        [ -n "${{ env.BUNDLE_AAB }}" ] && echo "App Bundle: ${{ env.BUNDLE_AAB }}"
         echo "=========================================="
+
     - name: Upload Debug APK
-      if: success()
+      if: success() && env.DEBUG_APK != ''
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-debug-apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
+        path: ${{ env.DEBUG_APK }}
         retention-days: 7
 
     - name: Upload Release APK
-      if: success()
+      if: success() && env.RELEASE_APK != ''
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: ${{ env.RELEASE_APK }}
         retention-days: 30
 
     - name: Upload App Bundle
-      if: success()
+      if: success() && env.BUNDLE_AAB != ''
       uses: actions/upload-artifact@v4
       with:
         name: viscend-studio-app-bundle
-        path: build/app/outputs/bundle/release/app-release.aab
+        path: ${{ env.BUNDLE_AAB }}
         retention-days: 30
 
-    - name: Troubleshoot on Failure
+    - name: Show Logs on Failure
       if: failure()
       run: |
         echo "=========================================="
         echo "❌ BUILD FAILED"
         echo "=========================================="
-        
         if [ -f build-debug.log ]; then
-          echo "=== Last 100 lines of build log ==="
+          echo ""
+          echo "=== Build Log (Last 100 lines) ==="
           tail -100 build-debug.log
         fi
-        
+        echo ""
+        echo "=== Flutter Doctor ==="
+        flutter doctor -v
         echo ""
         echo "=== Gradle Configuration ==="
         cat android/gradle/wrapper/gradle-wrapper.properties
-        
-        echo ""
-        echo "=== Android Build Files (First 20 lines) ==="
-        echo "--- build.gradle ---"
-        head -20 android/build.gradle
-        echo ""
-        echo "--- app/build.gradle ---"
-        head -30 android/app/build.gradle
-        
-        echo ""
-        echo "=========================================="
